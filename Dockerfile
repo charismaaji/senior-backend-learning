@@ -29,7 +29,7 @@ WORKDIR /app
 COPY package.json bun.lock ./
 
 # Install production dependency saja
-RUN bun install --production
+RUN bun install
 
 # Copy hasil build dari builder
 COPY --from=builder /app/dist ./dist

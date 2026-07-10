@@ -17,7 +17,7 @@ app.get("/", (_, res) => {
 	});
 });
 
-// app.use(errorMiddleware);
+app.use(errorMiddleware);
 
 await client.connect();
 console.log("✅ Connected to PostgreSQL");

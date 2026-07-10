@@ -1,20 +1,41 @@
-import { type Request, type Response } from "express";
+import type { Request, Response } from "express";
+
+import type { CreateTodoDto } from "../dto/todo/create-todo.dto";
 import * as todoService from "../services/todo.service";
 
-export async function findAll(_: Request, res: Response) {
-	const result = await todoService.findAll();
-	res.json(result);
-	// throw new Error("Belajar Error Handling");
+export async function findAll(_req: Request, res: Response): Promise<void> {
+	const todos = await todoService.findAll();
+
+	res.json(todos);
 }
 
-export async function create(req: Request, res: Response) {
-	const result = await todoService.create(req.body.title);
+export async function findById(
+	req: Request<{ id: string }>,
+	res: Response,
+): Promise<void> {
+	const id = Number(req.params.id);
 
-	res.status(201).json(result);
+	const todo = await todoService.findById(id);
+
+	res.json(todo);
 }
 
-export async function deleteById(req: Request, res: Response) {
-	await todoService.deleteById(Number(req.params.id));
+export async function create(
+	req: Request<Record<string, never>, unknown, CreateTodoDto>,
+	res: Response,
+): Promise<void> {
+	const todo = await todoService.create(req.body);
+
+	res.status(201).json(todo);
+}
+
+export async function deleteById(
+	req: Request<{ id: string }>,
+	res: Response,
+): Promise<void> {
+	const id = Number(req.params.id);
+
+	await todoService.deleteById(id);
 
 	res.sendStatus(204);
 }
