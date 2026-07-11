@@ -3,8 +3,12 @@ import todoRoutes from "./routes/todo.routes";
 import { client } from "./db/postgres";
 import { errorMiddleware } from "./middlewares";
 import { appConfig } from "./config";
+import { logger } from "./utils/logger";
+import { httpLogger } from "./middlewares/http-logger.middleware";
 
 const app = express();
+
+app.use(httpLogger);
 
 app.use(express.json());
 
@@ -19,10 +23,15 @@ app.get("/", (_, res) => {
 app.use(errorMiddleware);
 
 await client.connect();
-console.log("✅ Connected to PostgreSQL");
+
+logger.info("Connected to PostgreSQL");
 
 app.listen(appConfig.port, () => {
-	console.log(
-		`🚀 Server running at http://localhost:${appConfig.port} from Docker`,
+	logger.info(
+		{
+			port: appConfig.port,
+			environment: appConfig.environment,
+		},
+		"Server started",
 	);
 });

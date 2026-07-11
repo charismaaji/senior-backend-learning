@@ -15,7 +15,21 @@ export async function findById(
 ): Promise<void> {
 	const id = Number(req.params.id);
 
+	req.log.debug(
+		{
+			todoId: id,
+		},
+		"Finding Todo by ID",
+	);
+
 	const todo = await todoService.findById(id);
+
+	req.log.info(
+		{
+			todoId: id,
+		},
+		"Todo retrieved",
+	);
 
 	res.json(todo);
 }
