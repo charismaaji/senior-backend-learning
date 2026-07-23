@@ -24,8 +24,21 @@ export function validate(
 			return;
 		}
 
-		if (target === "body") {
-			req.body = result.data;
+		switch (target) {
+			case "body": {
+				req.body = result.data;
+				break;
+			}
+
+			case "query": {
+				Object.assign(req.query, result.data);
+				break;
+			}
+
+			case "params": {
+				Object.assign(req.params, result.data);
+				break;
+			}
 		}
 
 		next();

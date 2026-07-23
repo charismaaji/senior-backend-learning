@@ -1,12 +1,24 @@
 import type { Request, Response } from "express";
 
-import type { CreateTodoDto } from "../dto/todo/create-todo.dto";
+import * as dto from "../dto";
 import * as todoService from "../services/todo.service";
 
-export async function findAll(_req: Request, res: Response): Promise<void> {
-	const todos = await todoService.findAll();
+type FindAllTodosRequest = Request<
+	Record<string, never>,
+	unknown,
+	unknown,
+	dto.PaginationQueryDto
+>;
 
-	res.json(todos);
+export async function findAll(req: Request, res: Response): Promise<void> {
+	const { page, limit } = req.query as unknown as dto.PaginationQueryDto;
+
+	const result = await todoService.findAll({
+		page,
+		limit,
+	});
+
+	res.json(result);
 }
 
 export async function findById(
@@ -35,7 +47,7 @@ export async function findById(
 }
 
 export async function create(
-	req: Request<Record<string, never>, unknown, CreateTodoDto>,
+	req: Request<Record<string, never>, unknown, dto.CreateTodoDto>,
 	res: Response,
 ): Promise<void> {
 	const todo = await todoService.create(req.body);

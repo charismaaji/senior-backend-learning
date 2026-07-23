@@ -1,22 +1,49 @@
-import { client } from "../db/postgres";
+import { pool } from "../db/postgres";
 import type { CreateTodoDto } from "../dto/todo/create-todo.dto";
 import type { Todo, TodoListItem } from "../models/todo";
 
-export async function findAll(): Promise<TodoListItem[]> {
-	const result = await client.query<TodoListItem>(`
-		SELECT
-			id,
-			title,
-			completed
-		FROM todos
-		ORDER BY id
-	`);
+type FindAllTodosOptions = {
+	limit: number;
+	offset: number;
+};
+
+export async function findAll({ limit, offset }: FindAllTodosOptions) {
+	const result = await pool.query<TodoListItem>(
+		`
+			SELECT
+				id,
+				title,
+				completed
+			FROM todos
+			ORDER BY id ASC
+			LIMIT $1
+			OFFSET $2
+		`,
+		[limit, offset],
+	);
 
 	return result.rows;
 }
 
+export async function countAll(): Promise<number> {
+	const result = await pool.query<{ count: string }>(
+		`
+			SELECT COUNT(*) AS count
+			FROM todos
+		`,
+	);
+
+	const count = result.rows[0]?.count;
+
+	if (count === undefined) {
+		throw new Error("Failed to count todos");
+	}
+
+	return Number(count);
+}
+
 export async function findById(id: number): Promise<Todo | null> {
-	const result = await client.query<Todo>(
+	const result = await pool.query<Todo>(
 		`
 			SELECT
 				id,
@@ -33,7 +60,7 @@ export async function findById(id: number): Promise<Todo | null> {
 }
 
 export async function create(dto: CreateTodoDto): Promise<Todo> {
-	const result = await client.query<Todo>(
+	const result = await pool.query<Todo>(
 		`
 			INSERT INTO todos (
 				title,
@@ -59,7 +86,7 @@ export async function create(dto: CreateTodoDto): Promise<Todo> {
 }
 
 export async function deleteById(id: number): Promise<boolean> {
-	const result = await client.query(
+	const result = await pool.query(
 		`
 			DELETE FROM todos
 			WHERE id = $1

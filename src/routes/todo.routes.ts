@@ -1,20 +1,28 @@
 import { Router } from "express";
 
 import * as todoController from "../controllers/todo.controller";
-import { createTodoSchema, todoIdSchema } from "../dto/todo";
+import * as dto from "../dto";
 import { validate } from "../middlewares/validate.middleware";
 
 const router = Router();
 
-router.get("/", todoController.findAll);
+router.get(
+	"/",
+	validate(dto.paginationQuerySchema, "query"),
+	todoController.findAll,
+);
 
-router.get("/:id", validate(todoIdSchema, "params"), todoController.findById);
+router.get(
+	"/:id",
+	validate(dto.todoIdSchema, "params"),
+	todoController.findById,
+);
 
-router.post("/", validate(createTodoSchema, "body"), todoController.create);
+router.post("/", validate(dto.createTodoSchema, "body"), todoController.create);
 
 router.delete(
 	"/:id",
-	validate(todoIdSchema, "params"),
+	validate(dto.todoIdSchema, "params"),
 	todoController.deleteById,
 );
 
