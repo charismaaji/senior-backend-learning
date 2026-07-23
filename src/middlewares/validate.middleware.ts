@@ -31,7 +31,10 @@ export function validate(
 			}
 
 			case "query": {
-				Object.assign(req.query, result.data);
+				Object.defineProperty(req, "query", {
+					value: result.data,
+					configurable: true,
+				});
 				break;
 			}
 
