@@ -20,6 +20,13 @@ router.get(
 
 router.post("/", validate(dto.createTodoSchema, "body"), todoController.create);
 
+router.patch(
+	"/:id",
+	validate(dto.todoIdSchema, "params"),
+	validate(dto.updateTodoSchema, "body"),
+	todoController.updateById,
+);
+
 router.delete(
 	"/:id",
 	validate(dto.todoIdSchema, "params"),

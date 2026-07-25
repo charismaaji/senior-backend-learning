@@ -49,6 +49,16 @@ export async function create(dto: CreateTodoDto) {
 	return todoRepository.create(dto);
 }
 
+export async function updateById(id: number, input: dto.UpdateTodoDto) {
+	const todo = await todoRepository.updateById(id, input);
+
+	if (!todo) {
+		throw new AppError("Todo not found", 404, "TODO_NOT_FOUND");
+	}
+
+	return todo;
+}
+
 export async function deleteById(id: number): Promise<void> {
 	const deleted = await todoRepository.deleteById(id);
 

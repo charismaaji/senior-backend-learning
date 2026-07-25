@@ -24,7 +24,7 @@ app.get("/", (_, res) => {
 
 app.use(errorMiddleware);
 
-await pool.connect();
+await pool.query("SELECT 1");
 
 logger.info("Connected to PostgreSQL");
 

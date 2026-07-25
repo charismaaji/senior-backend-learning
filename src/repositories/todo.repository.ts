@@ -1,18 +1,46 @@
 import { pool } from "../db/postgres";
+import type { UpdateTodoDto } from "../dto";
 import type { CreateTodoDto } from "../dto/todo/create-todo.dto";
-import type { Todo, TodoListItem } from "../models/todo";
+import type { Todo } from "../models/todo";
 
 type FindAllTodosOptions = {
 	limit: number;
 	offset: number;
 };
 
+export async function create(dto: CreateTodoDto): Promise<Todo> {
+	const result = await pool.query<Todo>(
+		`
+			INSERT INTO todos (
+				title,
+				description
+			)
+			VALUES ($1, $2)
+			RETURNING
+				id,
+				title,
+				description,
+				completed
+		`,
+		[dto.title, dto.description],
+	);
+
+	const todo = result.rows[0];
+
+	if (!todo) {
+		throw new Error("Failed to create Todo");
+	}
+
+	return todo;
+}
+
 export async function findAll({ limit, offset }: FindAllTodosOptions) {
-	const result = await pool.query<TodoListItem>(
+	const result = await pool.query<Todo>(
 		`
 			SELECT
 				id,
 				title,
+				description,
 				completed
 			FROM todos
 			ORDER BY id ASC
@@ -59,30 +87,28 @@ export async function findById(id: number): Promise<Todo | null> {
 	return result.rows[0] ?? null;
 }
 
-export async function create(dto: CreateTodoDto): Promise<Todo> {
+export async function updateById(
+	id: number,
+	input: UpdateTodoDto,
+): Promise<Todo | null> {
 	const result = await pool.query<Todo>(
 		`
-			INSERT INTO todos (
-				title,
-				description
-			)
-			VALUES ($1, $2)
+			UPDATE todos
+			SET
+				title = COALESCE($1, title),
+				description = COALESCE($2, description),
+				completed = COALESCE($3, completed)
+			WHERE id = $4
 			RETURNING
 				id,
 				title,
 				description,
 				completed
 		`,
-		[dto.title, dto.description],
+		[input.title ?? null, input.description ?? null, input.completed ?? null, id],
 	);
 
-	const todo = result.rows[0];
-
-	if (!todo) {
-		throw new Error("Failed to create Todo");
-	}
-
-	return todo;
+	return result.rows[0] ?? null;
 }
 
 export async function deleteById(id: number): Promise<boolean> {
