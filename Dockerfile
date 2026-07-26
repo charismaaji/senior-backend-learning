@@ -1,43 +1,42 @@
 # =====================================================
-# Stage 1 - Builder
+# Stage 1 — Builder
 # =====================================================
+
 FROM oven/bun:1.3.14 AS builder
 
-# Semua proses berikutnya dilakukan di /app
 WORKDIR /app
 
-# Copy dependency terlebih dahulu agar cache Docker optimal
+# Copy dependency files lebih dahulu untuk memanfaatkan Docker cache
 COPY package.json bun.lock tsconfig.json ./
 
-# Install seluruh dependency (termasuk devDependencies)
-RUN bun install
+# Builder membutuhkan devDependencies seperti TypeScript
+RUN bun install --frozen-lockfile
 
 # Copy source code
 COPY src ./src
 
-# Build TypeScript menjadi JavaScript
+# Compile TypeScript ke JavaScript
 RUN bun run build
 
+
 # =====================================================
-# Stage 2 - Production
+# Stage 2 — Production
 # =====================================================
-FROM oven/bun:1.3.14
+
+FROM oven/bun:1.3.14 AS production
 
 WORKDIR /app
 
-# Copy dependency file
+# Copy dependency files
 COPY package.json bun.lock ./
 
-# Install production dependency saja
-RUN bun install
+# Production hanya membutuhkan runtime dependencies
+RUN bun install --production --frozen-lockfile
 
 # Copy hasil build dari builder
 COPY --from=builder /app/dist ./dist
 
-# -----------------------------------------------------
-# Jalankan aplikasi menggunakan user biasa
-# -----------------------------------------------------
-
+# Jalankan aplikasi menggunakan non-root user bawaan Bun
 USER bun
 
 ENV NODE_ENV=production

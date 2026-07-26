@@ -6,4 +6,6 @@ export interface TodoListItem {
 
 export interface Todo extends TodoListItem {
 	description: string;
+	createdAt: Date;
+	updatedAt: Date;
 }
